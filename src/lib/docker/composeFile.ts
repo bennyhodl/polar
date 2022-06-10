@@ -4,10 +4,11 @@ import {
   CommonNode,
   EclairNode,
   LndNode,
+  SenseiNode,
 } from 'shared/types';
 import { bitcoinCredentials, dockerConfigs, eclairCredentials } from 'utils/constants';
 import { getContainerName } from 'utils/network';
-import { bitcoind, clightning, eclair, lnd } from './nodeTemplates';
+import { bitcoind, clightning, eclair, lnd, sensei } from './nodeTemplates';
 
 export interface ComposeService {
   image: string;
@@ -130,6 +131,28 @@ class ComposeFile {
     const command = this.mergeCommand(nodeCommand, variables);
     // add the docker service
     this.content.services[name] = eclair(name, container, image, rest, p2p, command);
+  }
+
+  addSensei(node: SenseiNode, backend: CommonNode) {
+    const { name, version, ports } = node;
+    const { rest, p2p } = ports;
+    const container = getContainerName(node);
+
+    const variables = {
+      backendName: getContainerName(backend),
+      rpcUser: bitcoinCredentials.user,
+      rpcPass: bitcoinCredentials.pass,
+    };
+
+    // use the node's custom image or the default for the implementation
+    // TODO: Add sensei to polarlightning docker hub. Latest version for now.
+    const image = node.docker.image || `${dockerConfigs.sensei.imageName}:${version}`;
+    // use the node's custom command or the default for the implementation
+    const nodeCommand = node.docker.command || dockerConfigs.sensei.command;
+    // replace the variables in the command
+    const command = this.mergeCommand(nodeCommand, variables);
+    // add the docker service
+    this.content.services[name] = sensei(name, container, image, rest, p2p, command);
   }
 
   private mergeCommand(command: string, variables: Record<string, string>) {
