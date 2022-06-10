@@ -20,6 +20,7 @@ import {
   createCLightningNetworkNode,
   createEclairNetworkNode,
   createLndNetworkNode,
+  createSenseiNetworkNode,
   createNetwork,
   filterCompatibleBackends,
   getMissingImages,
@@ -39,6 +40,7 @@ interface AddNetworkArgs {
   lndNodes: number;
   clightningNodes: number;
   eclairNodes: number;
+  senseiNodes: number;
   bitcoindNodes: number;
   customNodes: Record<string, number>;
 }
@@ -201,7 +203,15 @@ const networkModel: NetworkModel = {
   addNetwork: thunk(
     async (
       actions,
-      { name, lndNodes, clightningNodes, eclairNodes, bitcoindNodes, customNodes },
+      {
+        name,
+        lndNodes,
+        clightningNodes,
+        eclairNodes,
+        senseiNodes,
+        bitcoindNodes,
+        customNodes,
+      },
       { dispatch, getState, injections, getStoreState, getStoreActions },
     ) => {
       const { dockerRepoState, computedManagedImages, settings } = getStoreState().app;
@@ -221,6 +231,7 @@ const networkModel: NetworkModel = {
         lndNodes,
         clightningNodes,
         eclairNodes,
+        senseiNodes,
         bitcoindNodes,
         repoState: dockerRepoState,
         managedImages: computedManagedImages,
@@ -286,6 +297,15 @@ const networkModel: NetworkModel = {
             network,
             version,
             dockerRepoState.images.eclair.compatibility,
+            docker,
+          );
+          network.nodes.lightning.push(node);
+          break;
+        case 'sensei':
+          node = createSenseiNetworkNode(
+            network,
+            version,
+            dockerRepoState.images.sensei.compatibility,
             docker,
           );
           network.nodes.lightning.push(node);

@@ -112,6 +112,10 @@ export const testRepoState: DockerRepoState = {
       latest: '0.7.0',
       versions: ['0.7.0', '0.6.2', '0.6.1', '0.6.0', '0.5.0', '0.4.2'],
     },
+    sensei: {
+      latest: '0.2.1-beta2',
+      versions: ['0.2.1-beta2'],
+    },
     bitcoind: {
       latest: '22.0',
       versions: [
@@ -139,6 +143,7 @@ export const getNetwork = (networkId = 1, name?: string, status?: Status): Netwo
     lndNodes: 2,
     clightningNodes: 1,
     eclairNodes: 1,
+    senseiNodes: 1,
     bitcoindNodes: 1,
     status,
     repoState: defaultRepoState,

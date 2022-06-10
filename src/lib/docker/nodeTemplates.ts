@@ -131,3 +131,33 @@ export const eclair = (
     `${p2pPort}:9735`, // p2p
   ],
 });
+
+export const sensei = (
+  name: string,
+  container: string,
+  image: string,
+  restPort: number,
+  p2pPort: number,
+  command: string,
+): ComposeService => ({
+  image,
+  container_name: container,
+  environment: {
+    USERID: '${USERID:-1000}',
+    GROUPID: '${GROUPID:-1000}',
+  },
+  hostname: name,
+  command: trimInside(command),
+  restart: 'always',
+  volumes: [
+    `./volumes/${dockerConfigs.sensei.volumeDirName}/${name}:/home/sensei/.sensei`,
+  ],
+  expose: [
+    '5401', // REST
+    '9735', // p2p
+  ],
+  ports: [
+    `${restPort}:5401`, // REST
+    `${p2pPort}:9735`, // p2p
+  ],
+});

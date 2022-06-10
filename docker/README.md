@@ -129,6 +129,27 @@ Replace `<version>` with the desired Eclair version (ex: `0.3.3`).
 $ docker push polarlightning/eclair:<version>
 ```
 
+## Sensei
+
+### Tags
+
+- `0.2.1-beta2` ([sensei/Dockerfile](https://github.com/jamaljsr/polar/blob/master/docker/sensei/Dockerfile))
+
+**Building the image**
+
+```sh
+$ cd sensei
+$ docker build --build-arg SENSEI_VERSION=<version> -t bennybitcoin/sensei:<version> .
+```
+
+Replace `<version>` with the desired Sensei version (ex: `0.2.1-beta2`).
+
+**Push to Docker Hub**
+
+```sh
+$ docker push bennybitcoin/sensei:<version>
+```
+
 # Out-of-Band Image Updates
 
 > Note: These steps can only be performed by developers with commit access to this GitHub repo and push access to the Docker Hub repo

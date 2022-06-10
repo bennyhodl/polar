@@ -13,6 +13,7 @@ import {
   EclairNode,
   LightningNode,
   LndNode,
+  SenseiNode,
 } from 'shared/types';
 import stripAnsi from 'strip-ansi';
 import { DockerLibrary, DockerVersions, Network, NetworksFile } from 'types';
@@ -100,6 +101,11 @@ class DockerService implements DockerLibrary {
         const eclair = node as EclairNode;
         const backend = bitcoin.find(n => n.name === eclair.backendName) || bitcoin[0];
         file.addEclair(eclair, backend);
+      }
+      if (node.implementation === 'sensei') {
+        const sensei = node as SenseiNode;
+        const backend = bitcoin.find(n => n.name === sensei.backendName) || bitcoin[0];
+        file.addSensei(sensei, backend);
       }
     });
 

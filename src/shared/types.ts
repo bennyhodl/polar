@@ -22,7 +22,7 @@ export interface CommonNode {
 
 export interface LightningNode extends CommonNode {
   type: 'lightning';
-  implementation: 'LND' | 'c-lightning' | 'eclair';
+  implementation: 'LND' | 'c-lightning' | 'eclair' | 'sensei';
   backendName: string;
   ports: Record<string, number | undefined>;
 }
@@ -52,6 +52,16 @@ export interface CLightningNode extends LightningNode {
 }
 
 export interface EclairNode extends LightningNode {
+  ports: {
+    rest: number;
+    p2p: number;
+  };
+}
+
+export interface SenseiNode extends LightningNode {
+  paths: {
+    macaroon: string;
+  };
   ports: {
     rest: number;
     p2p: number;

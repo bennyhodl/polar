@@ -4,6 +4,7 @@ import bitcoindLogo from 'resources/bitcoin.svg';
 import clightningLogo from 'resources/clightning.png';
 import eclairLogo from 'resources/eclair.png';
 import lndLogo from 'resources/lnd.png';
+import senseiLogo from 'resources/sensei.png';
 import packageJson from '../../package.json';
 
 // App
@@ -62,6 +63,10 @@ export const BasePorts: Record<NodeImplementation, Record<string, number>> = {
   eclair: {
     rest: 8281,
     p2p: 9935,
+  },
+  sensei: {
+    rest: 5401,
+    p2p: 9735,
   },
   btcd: {},
 };
@@ -164,6 +169,22 @@ export const dockerConfigs: Record<NodeImplementation, DockerConfig> = {
     // if vars are modified, also update composeFile.ts & the i18n strings for cmps.nodes.CommandVariables
     variables: ['name', 'eclairPass', 'backendName', 'rpcUser', 'rpcPass'],
   },
+  sensei: {
+    name: 'Sensei',
+    imageName: 'bennybitcoin/sensei', // Add docker hub image
+    logo: senseiLogo,
+    platforms: ['mac', 'linux', 'windows'],
+    volumeDirName: 'sensei',
+    command: [
+      'senseid',
+      '--network=regtest',
+      '--bitcoind-rpc-host={{backendName}}',
+      '--bitcoind-rpc-port=18443',
+      '--bitcoind-rpc-username={{rpcUser}}',
+      '--bitcoind-rpc-password={{rpcPass}}',
+    ].join('\n  '),
+    variables: ['backendName', 'rpcUser', 'rpcPass'],
+  },
   bitcoind: {
     name: 'Bitcoin Core',
     imageName: 'polarlightning/bitcoind',
@@ -253,6 +274,10 @@ export const defaultRepoState: DockerRepoState = {
     eclair: {
       latest: '0.7.0',
       versions: ['0.7.0', '0.6.2', '0.6.1', '0.6.0', '0.5.0', '0.4.2'],
+    },
+    sensei: {
+      latest: '0.2.1-beta2',
+      versions: ['0.2.1-beta2'],
     },
     bitcoind: {
       latest: '23.0',

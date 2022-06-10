@@ -13,6 +13,7 @@ import {
   LightningNode,
   LndNode,
   NodeImplementation,
+  SenseiNode,
   Status,
 } from 'shared/types';
 import { createIpcSender } from 'lib/ipc/ipcService';
@@ -89,6 +90,16 @@ export const getCLightningFilePaths = (name: string, network: Network) => {
   const path = nodePath(network, 'c-lightning', name);
   return {
     macaroon: join(path, 'rest-api', 'access.macaroon'),
+  };
+};
+
+// Sensei currently stores macaroon encrypted in a sqlite database
+// To get the macaroon there will be an update for storing the macaroon in the `.sensei` path unencrypted.
+export const getSenseiFilePaths = (name: string, network: Network) => {
+  const path = nodePath(network, 'sensei', name);
+
+  return {
+    macaroon: '',
   };
 };
 
@@ -220,6 +231,41 @@ export const createEclairNetworkNode = (
   };
 };
 
+export const createSenseiNetworkNode = (
+  network: Network,
+  version: string,
+  compatibility: DockerRepoImage['compatibility'],
+  docker: CommonNode['docker'],
+  status = Status.Stopped,
+): SenseiNode => {
+  const { bitcoin, lightning } = network.nodes;
+  const implementation: SenseiNode['implementation'] = 'sensei';
+  const backends = filterCompatibleBackends(
+    implementation,
+    version,
+    compatibility,
+    bitcoin,
+  );
+  const id = lightning.length ? Math.max(...lightning.map(n => n.id)) + 1 : 0;
+  const name = getName(id);
+  return {
+    id,
+    networkId: network.id,
+    name: name,
+    type: 'lightning',
+    implementation,
+    version,
+    status,
+    paths: getSenseiFilePaths(name, network),
+    backendName: backends[id % backends.length].name,
+    ports: {
+      rest: BasePorts.sensei.rest + id,
+      p2p: BasePorts.sensei.p2p + id,
+    },
+    docker,
+  };
+};
+
 export const createBitcoindNetworkNode = (
   network: Network,
   version: string,
@@ -264,6 +310,7 @@ export const createNetwork = (config: {
   lndNodes: number;
   clightningNodes: number;
   eclairNodes: number;
+  senseiNodes: number;
   bitcoindNodes: number;
   repoState: DockerRepoState;
   managedImages: ManagedImage[];
@@ -276,6 +323,7 @@ export const createNetwork = (config: {
     lndNodes,
     clightningNodes,
     eclairNodes,
+    senseiNodes,
     bitcoindNodes,
     repoState,
     managedImages,
@@ -331,14 +379,16 @@ export const createNetwork = (config: {
           ? createLndNetworkNode
           : image.implementation === 'c-lightning'
           ? createCLightningNetworkNode
-          : createEclairNetworkNode;
+          : image.implementation === 'eclair'
+          ? createEclairNetworkNode
+          : createSenseiNetworkNode;
       range(count).forEach(() => {
         lightning.push(createFunc(network, latest, compatibility, docker, status));
       });
     });
 
   // add lightning nodes in an alternating pattern
-  range(Math.max(lndNodes, clightningNodes, eclairNodes)).forEach(i => {
+  range(Math.max(lndNodes, clightningNodes, eclairNodes, senseiNodes)).forEach(i => {
     if (i < lndNodes) {
       const { latest, compatibility } = repoState.images.LND;
       const cmd = getImageCommand(managedImages, 'LND', latest);
@@ -364,6 +414,14 @@ export const createNetwork = (config: {
       const cmd = getImageCommand(managedImages, 'eclair', latest);
       lightning.push(
         createEclairNetworkNode(network, latest, compatibility, dockerWrap(cmd), status),
+      );
+    }
+
+    if (i < senseiNodes) {
+      const { latest, compatibility } = repoState.images.sensei;
+      const cmd = getImageCommand(managedImages, 'sensei', latest);
+      lightning.push(
+        createSenseiNetworkNode(network, latest, compatibility, dockerWrap(cmd), status),
       );
     }
   });

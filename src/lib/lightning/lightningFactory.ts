@@ -2,6 +2,7 @@ import { LightningNode } from 'shared/types';
 import { clightningService } from 'lib/lightning/clightning';
 import { eclairService } from 'lib/lightning/eclair';
 import { lndService } from 'lib/lightning/lnd';
+import { senseiService } from 'lib/lightning/sensei';
 import { LightningService } from 'types';
 
 /**
@@ -19,6 +20,7 @@ class LightningFactory {
       LND: lndService,
       'c-lightning': clightningService,
       eclair: eclairService,
+      sensei: senseiService,
     };
   }
 
